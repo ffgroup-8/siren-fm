@@ -8,14 +8,28 @@
 const SCANNER_FEEDS = [
     { city: 'Dallas',         state: 'TX', desc: 'Police & Fire',  type: 'openmhz', system: 'ntirnd1' },
     { city: 'San Francisco',  state: 'CA', desc: 'Police',         type: 'openmhz', system: 'sfp25'   },
+    { city: 'Washington',     state: 'DC', desc: 'Fire & EMS',     type: 'openmhz', system: 'dcfd'    },
 ];
 
 // --- SoundCloud playlists per listening mode ---
+// Each mode can have multiple playlists; one is chosen at random on load/switch
 const MODE_PLAYLISTS = {
-    ambient:   'https://soundcloud.com/apple_fish/sets/deep-space-ambient',
-    synthwave: 'https://soundcloud.com/chinosynth/sets/chino-synthwave-selection',
-    zen:       'https://soundcloud.com/naklea/sets/deep-ambient-zen-garden',
+    ambient: [
+        'https://soundcloud.com/apple_fish/sets/deep-space-ambient',
+        'https://soundcloud.com/worldbeatjeremy/sets/space-dreams-ambient-drone',
+    ],
+    synthwave: [
+        'https://soundcloud.com/chinosynth/sets/chino-synthwave-selection',
+    ],
+    zen: [
+        'https://soundcloud.com/naklea/sets/deep-ambient-zen-garden',
+    ],
 };
+
+function pickPlaylist(mode) {
+    const list = MODE_PLAYLISTS[mode];
+    return list[Math.floor(Math.random() * list.length)];
+}
 
 function shuffleIndices(count) {
     const indices = Array.from({ length: count }, (_, i) => i);
@@ -344,7 +358,7 @@ class AmbientPlayer {
         this.titleEl.textContent = 'Loading playlist...';
         this.artistEl.textContent = '';
 
-        const initialUrl = MODE_PLAYLISTS[this.currentMode];
+        const initialUrl = pickPlaylist(this.currentMode);
         const embedUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(initialUrl)}&auto_play=false&show_artwork=false&show_playcount=false&show_user=true&color=%23a855f7`;
         this.iframe.src = embedUrl;
 
@@ -465,7 +479,7 @@ class AmbientPlayer {
 
         // Use widget.load() to swap playlists without recreating the widget
         if (this.widget) {
-            this.widget.load(MODE_PLAYLISTS[mode], {
+            this.widget.load(pickPlaylist(mode), {
                 auto_play: shouldPlay,
                 show_artwork: false,
                 callback: () => {
